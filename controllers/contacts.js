@@ -1,4 +1,4 @@
-const Contact = require("./contact");
+const { Contact } = require("../schema/contact");
 
 const listContacts = async () => {
   // eslint-disable-next-line no-useless-catch
@@ -52,7 +52,9 @@ const updateContact = async (contactId, body) => {
 const updateStatusContact = async (contactId, body) => {
   // eslint-disable-next-line no-useless-catch
   try {
-    const data = await Contact.findByIdAndUpdate(contactId, { favorite: body });
+    const data = await Contact.findByIdAndUpdate(contactId, body, {
+      new: true,
+    });
     return data;
   } catch (error) {
     throw error;
@@ -60,10 +62,10 @@ const updateStatusContact = async (contactId, body) => {
 };
 
 module.exports = {
+  updateStatusContact,
   listContacts,
   getContactById,
   removeContact,
   addContact,
   updateContact,
-  updateStatusContact,
 };
