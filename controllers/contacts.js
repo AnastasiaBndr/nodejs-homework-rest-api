@@ -30,8 +30,13 @@ const removeContact = async (contactId) => {
 };
 
 const addContact = async (body, res) => {
-  const data = await Contact.create(body);
-  return data;
+  const contact = await Contact.create(body);
+  if (contact) {
+    contact.set(body);
+    await contact.validate();
+    const data = await contact.save();
+    return data;
+  }
 };
 
 const updateContact = async (contactId, body) => {
@@ -41,12 +46,8 @@ const updateContact = async (contactId, body) => {
   });
   if (contact) {
     contact.set(body);
-    // Запустити валідацію
     await contact.validate();
-
-    // Зберегти оновлений контакт
     const data = await contact.save();
-
     return data;
   }
 };

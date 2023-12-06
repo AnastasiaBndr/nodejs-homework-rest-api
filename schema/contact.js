@@ -39,16 +39,25 @@ const contactsSchema = Joi.object({
 
 contactSchema.pre("validate", function (next) {
   const contact = this;
-  if (contact.email) {
-    if (!emailRegex.test(contact.email)) {
-      return next(new Error("Please fill a valid email address: aa@gmail.com"));
-    }
+
+  const requiredFields = ["name", "email", "phone"];
+  const missingFields = requiredFields.filter((field) => !contact[field]);
+
+  if (missingFields.length > 0) {
+    const errorMessage = `Required fields are missing: ${missingFields.join(
+      ", "
+    )}`;
+    return next(new Error(errorMessage));
   }
-  if (contact.phone) {
-    if (!phoneRegex.test(contact.phone)) {
-      return next(new Error("Please write allowed phone: (000)111 1111"));
-    }
+
+  if (contact.email && !emailRegex.test(contact.email)) {
+    return next(new Error("Please fill a valid email address: aa@gmail.com"));
   }
+
+  if (contact.phone && !phoneRegex.test(contact.phone)) {
+    return next(new Error("Please write allowed phone: (000)111 1111"));
+  }
+
   next();
 });
 

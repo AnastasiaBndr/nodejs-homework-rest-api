@@ -18,7 +18,7 @@ router.get("/:contactId", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { error } = contactsSchema.validate(req.body);
+    const { error } = req.body;
     if (error) {
       res.status(400).json({ message: error.message });
     } else {
