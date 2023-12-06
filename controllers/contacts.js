@@ -33,19 +33,22 @@ const addContact = async (body) => {
   // eslint-disable-next-line no-useless-catch
   try {
     const data = await Contact.create(body);
+    console.log(data);
     return data;
   } catch (err) {
-    return err;
+    return null;
   }
 };
 
 const updateContact = async (contactId, body) => {
   // eslint-disable-next-line no-useless-catch
   try {
-    const data = await Contact.findByIdAndUpdate(contactId, body);
+    const data = await Contact.findByIdAndUpdate(contactId, body, {
+      new: true,
+    });
     return data;
   } catch (error) {
-    throw error;
+    return null;
   }
 };
 

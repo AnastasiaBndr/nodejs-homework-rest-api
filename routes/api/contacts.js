@@ -1,5 +1,5 @@
 const express = require("express");
-const { favoriteSchema } = require("../../schema/contact");
+const { favoriteSchema, updateSchema } = require("../../schema/contact");
 
 const contacts = require("../../controllers/contacts.js");
 const router = express.Router();
@@ -23,7 +23,8 @@ router.post("/", async (req, res, next) => {
       res.status(400).json(error.message);
     } else {
       const result = await contacts.addContact(req.body);
-      res.status(201).json(result);
+      if (result !== null) res.status(201).json(result);
+      else res.status(404).json({ message: "Missing fields!" });
     }
   } catch (err) {
     next(err);
@@ -40,15 +41,15 @@ router.delete("/:contactId", async (req, res, next) => {
 
 router.put("/:contactId", async (req, res, next) => {
   try {
-    const { error } = req.body;
+    const { error } = updateSchema.validate(req.body);
     if (error) {
-      res.status(400).json(error.message);
+      res.status(400).json({ message: error.message });
     } else {
       const result = await contacts.updateContact(
         req.params.contactId,
         req.body
       );
-      if (Object.keys(result).length !== 0) res.status(200).json(result);
+      if (result !== null) res.status(200).json(result);
       else res.status(404).json({ message: "Not found!" });
     }
   } catch (err) {
@@ -60,7 +61,7 @@ router.patch("/:contactId/favorite", async (req, res, next) => {
   try {
     const { error } = favoriteSchema.validate(req.body);
     if (error) {
-      res.status(400).json(error.message);
+      res.status(400).json({ message: error.message });
     } else {
       const result = await contacts.updateStatusContact(
         req.params.contactId,
