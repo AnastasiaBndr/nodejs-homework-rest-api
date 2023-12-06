@@ -29,25 +29,25 @@ const removeContact = async (contactId) => {
   }
 };
 
-const addContact = async (body) => {
-  // eslint-disable-next-line no-useless-catch
-  try {
-    const data = await Contact.create(body);
-    return data;
-  } catch (err) {
-    return null;
-  }
+const addContact = async (body, res) => {
+  const data = await Contact.create(body);
+  return data;
 };
 
 const updateContact = async (contactId, body) => {
-  // eslint-disable-next-line no-useless-catch
-  try {
-    const data = await Contact.findByIdAndUpdate(contactId, body, {
-      new: true,
-    });
+  const contact = await Contact.findByIdAndUpdate(contactId, body, {
+    new: true,
+    runValidators: true,
+  });
+  if (contact) {
+    contact.set(body);
+    // Запустити валідацію
+    await contact.validate();
+
+    // Зберегти оновлений контакт
+    const data = await contact.save();
+
     return data;
-  } catch (error) {
-    return null;
   }
 };
 

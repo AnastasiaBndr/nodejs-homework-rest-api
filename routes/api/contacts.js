@@ -1,5 +1,5 @@
 const express = require("express");
-const { favoriteSchema, updateSchema } = require("../../schema/contact");
+const { favoriteSchema, contactsSchema } = require("../../schema/contact");
 
 const contacts = require("../../controllers/contacts.js");
 const router = express.Router();
@@ -18,11 +18,11 @@ router.get("/:contactId", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { error } = req.body;
+    const { error } = contactsSchema.validate(req.body);
     if (error) {
-      res.status(400).json(error.message);
+      res.status(400).json({ message: error.message });
     } else {
-      const result = await contacts.addContact(req.body);
+      const result = await contacts.addContact(req.body, res);
       if (result !== null) res.status(201).json(result);
       else res.status(404).json({ message: "Missing fields!" });
     }
@@ -41,7 +41,8 @@ router.delete("/:contactId", async (req, res, next) => {
 
 router.put("/:contactId", async (req, res, next) => {
   try {
-    const { error } = updateSchema.validate(req.body);
+    const { error } = req.body;
+    console.log(error);
     if (error) {
       res.status(400).json({ message: error.message });
     } else {
