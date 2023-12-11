@@ -1,14 +1,15 @@
 const express = require("express");
 const { favoriteSchema, updateSchema } = require("../../schema/contact");
+const { authentificate } = require("../../middlewares");
 
 const contacts = require("../../controllers/contacts.js");
 const router = express.Router();
 
-router.get("/", async (req, res, next) => {
-  res.status(200).json(await contacts.listContacts());
+router.get("/", authentificate, async (req, res, next) => {
+  res.status(200).json(await contacts.listContacts(req.user));
 });
 
-router.get("/:contactId", async (req, res, next) => {
+router.get("/:contactId", authentificate, async (req, res, next) => {
   const contact = await contacts.getContactById(req.params.contactId);
   if (contact) res.status(200).json(contact);
   else {
@@ -16,13 +17,13 @@ router.get("/:contactId", async (req, res, next) => {
   }
 });
 
-router.post("/", async (req, res, next) => {
+router.post("/", authentificate, async (req, res, next) => {
   try {
     const { error } = req.body;
     if (error) {
       res.status(400).json(error.message);
     } else {
-      const result = await contacts.addContact(req.body);
+      const result = await contacts.addContact(req.body, req.user);
       if (result !== null) res.status(201).json(result);
       else res.status(404).json({ message: "Missing fields!" });
     }
@@ -31,7 +32,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.delete("/:contactId", async (req, res, next) => {
+router.delete("/:contactId", authentificate, async (req, res, next) => {
   const contact = await contacts.removeContact(req.params.contactId);
   if (contact) res.status(200).json({ message: "contact deleted!" });
   else {
@@ -39,7 +40,7 @@ router.delete("/:contactId", async (req, res, next) => {
   }
 });
 
-router.put("/:contactId", async (req, res, next) => {
+router.put("/:contactId", authentificate, async (req, res, next) => {
   try {
     const { error } = updateSchema.validate(req.body);
     if (error) {
@@ -57,7 +58,7 @@ router.put("/:contactId", async (req, res, next) => {
   }
 });
 
-router.patch("/:contactId/favorite", async (req, res, next) => {
+router.patch("/:contactId/favorite", authentificate, async (req, res, next) => {
   try {
     const { error } = favoriteSchema.validate(req.body);
     if (error) {

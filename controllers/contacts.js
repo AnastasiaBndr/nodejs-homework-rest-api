@@ -1,9 +1,11 @@
 const { Contact } = require("../schema/contact");
 
-const listContacts = async () => {
+const listContacts = async (user) => {
   // eslint-disable-next-line no-useless-catch
   try {
-    const result = await Contact.find();
+    const { _id: owner } = user;
+    const result = await Contact.find({ owner });
+    console.log(result);
     return result;
   } catch (error) {
     throw error;
@@ -29,13 +31,14 @@ const removeContact = async (contactId) => {
   }
 };
 
-const addContact = async (body) => {
-  // eslint-disable-next-line no-useless-catch
-  try {
-    const data = await Contact.create(body);
+const addContact = async (body, user) => {
+  const { _id: owner } = user;
+  const contact = await Contact.create({ ...body, owner });
+  if (contact) {
+    contact.set(body);
+    await contact.validate();
+    const data = await contact.save();
     return data;
-  } catch (err) {
-    return null;
   }
 };
 
@@ -44,6 +47,7 @@ const updateContact = async (contactId, body) => {
   try {
     const data = await Contact.findByIdAndUpdate(contactId, body, {
       new: true,
+      runValidators: true,
     });
     return data;
   } catch (error) {

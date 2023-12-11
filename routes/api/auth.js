@@ -1,6 +1,7 @@
 const express = require("express");
 const { schemas } = require("../../schema/user");
 const users = require("../../controllers/auth");
+const { authentificate } = require("../../middlewares");
 
 const router = express.Router();
 const { HttpError } = require("../../helpers");
@@ -11,7 +12,7 @@ router.post("/register", async (req, res, next) => {
     if (error) {
       HttpError(res, 400, error.message);
     } else {
-      const result = await users.register(req.body);
+      const result = await users.register(req, res);
       if (result !== null) res.status(201).json(result);
       else HttpError(res, 409, "Email is used!");
     }
@@ -33,6 +34,14 @@ router.post("/login", async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+router.get("/current", authentificate, async (req, res, next) => {
+  users.getCurrent(req, res);
+});
+
+router.post("/logout", authentificate, async (res, req, next) => {
+  users.logOut(res, req);
 });
 
 module.exports = router;

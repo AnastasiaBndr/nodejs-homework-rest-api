@@ -2,7 +2,12 @@ const { Schema, model } = require("mongoose");
 const Joi = require("joi");
 const { HandleMongooseError } = require("../helpers");
 
+const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+
 const userSchema = new Schema({
+  name: {
+    type: String,
+  },
   password: {
     type: String,
     required: [true, "Set password for user"],
@@ -17,10 +22,9 @@ const userSchema = new Schema({
     enum: ["starter", "pro", "business"],
     default: "starter",
   },
-  token: String,
-  owner: {
-    type: Schema.Types.ObjectId,
-    ref: "user",
+  token: {
+    type: String,
+    default: "",
   },
 });
 
@@ -35,10 +39,34 @@ const authSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+const userJoiSchema = Joi.object({
+  email: Joi.string().required(),
+});
+
 const schemas = {
   registerSchema,
   authSchema,
+  userJoiSchema,
 };
+
+userSchema.pre("validate", function (next) {
+  const contact = this;
+
+  const requiredFields = ["email"];
+  const missingFields = requiredFields.filter((field) => !contact[field]);
+
+  if (missingFields.length > 0) {
+    const errorMessage = `Required fields are missing: ${missingFields.join(
+      ", "
+    )}`;
+    return next(new Error(errorMessage));
+  }
+  console.log(emailRegex.test(contact.email));
+  if (contact.email && !emailRegex.test(contact.email)) {
+    return next(new Error("Please fill a valid email address: aa@gmail.com"));
+  }
+  next();
+});
 
 userSchema.post("save", HandleMongooseError);
 
