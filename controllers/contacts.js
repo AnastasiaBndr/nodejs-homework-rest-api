@@ -5,7 +5,6 @@ const listContacts = async (user) => {
   try {
     const { _id: owner } = user;
     const result = await Contact.find({ owner });
-    console.log(result);
     return result;
   } catch (error) {
     throw error;
