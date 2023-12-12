@@ -4,17 +4,6 @@ const jwt = require("jsonwebtoken");
 
 const { SECRET_KEY } = process.env;
 
-const register = async (req, res) => {
-  const { body } = req;
-  const hashPassword = await bcrypt.hash(body.password, 10);
-  const newUser = await User.create({ ...body, password: hashPassword });
-  if (newUser) {
-    await newUser.validate();
-    const data = await newUser.save();
-    return data;
-  } else return null;
-};
-
 const login = async (body) => {
   try {
     const user = await User.findOne({
@@ -31,7 +20,7 @@ const login = async (body) => {
       const payload = { id: user.id };
       const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "24h" });
 
-      const newUser = await User.findByIdAndUpdate(
+      await User.findByIdAndUpdate(
         user._id,
         { token },
         {
@@ -39,7 +28,11 @@ const login = async (body) => {
         }
       );
 
-      return { token: token, user: newUser };
+      return {
+        token: token,
+        email: user.email,
+        subscription: user.subscription,
+      };
     }
   } catch (err) {
     return null;
@@ -51,23 +44,7 @@ const getCurrent = async (req, res) => {
   return res.json({ email: email, subscription: subscription });
 };
 
-const logOut = async (req, res) => {
-  const { user } = req;
-  console.log(user);
-  await User.findByIdAndUpdate(
-    user._id,
-    { token: "" },
-    {
-      new: true,
-    }
-  );
-
-  return res.json({ message: "LogOut is succesfull!" });
-};
-
 module.exports = {
-  register,
   login,
   getCurrent,
-  logOut,
 };
