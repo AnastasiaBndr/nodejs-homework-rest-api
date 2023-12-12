@@ -5,7 +5,7 @@ const { HttpError } = require("../helpers");
 const register = async (req, res) => {
   const { body } = req;
   const hashPassword = await bcrypt.hash(body.password, 10);
-  const tempUser = User.findOne({ email: body.email });
+  const tempUser = await User.findOne({ email: body.email });
   if (!tempUser) {
     const newUser = await User.create({ ...body, password: hashPassword });
     if (newUser) {
