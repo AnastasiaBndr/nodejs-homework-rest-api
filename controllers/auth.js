@@ -5,6 +5,7 @@ const gravatar = require("gravatar");
 const { HttpError } = require("../helpers");
 const path = require("path");
 const fs = require("fs");
+const Jimp = require("jimp");
 
 const avatarsDir = path.join(__dirname, "../", "public", "avatars");
 
@@ -85,10 +86,24 @@ const register = async (req, res) => {
 const updateAvatars = async (user, file) => {
   const { _id } = user;
   const { path: tempUpload, originalname } = file;
-  const resultUpload = path.join(avatarsDir, originalname);
+  const avatarName = user.email.split("@")[0] + ".png";
+  Jimp.read(originalname)
+    .then((lenna) => {
+      return lenna
+        .resize(250, 250) // resize
+        .quality(60) // set JPEG quality
+        .greyscale() // set greyscale
+        .write(avatarName); // save
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const resultUpload = path.join(avatarsDir, avatarName);
 
   await fs.promises.rename(tempUpload, resultUpload);
-  const avatarURL = path.join("avatars", originalname);
+
+  const avatarURL = path.join("avatars", avatarName);
 
   await User.findByIdAndUpdate(_id, { avatarURL });
 
