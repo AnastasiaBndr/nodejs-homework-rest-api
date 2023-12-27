@@ -9,16 +9,36 @@ const { HttpError } = require("../../helpers");
 router.post("/login", async (req, res, next) => {
   try {
     const { error } = schemas.authSchema.validate(req.body);
+    console.log(req.body)
     if (error) {
       HttpError(res, 400, error.message);
-    } else {
-      const result = await users.login(req.body);
+    }
+    else{
+      const result = await users.login(req.body, res);
       if (result !== null) res.status(201).json(result);
       else HttpError(res, 401, "Email or password invalid!");
     }
   } catch (err) {
     next(err);
   }
+});
+
+router.post("/verify", async(req, res, next)=>{
+  try {
+    const { error } = schemas.emailSchema.validate(req.body);
+    if (error) {
+      HttpError(res, 400, error.message);
+    } else {
+      users.resendVerifyEmail(req.body, res);
+    }
+  } catch (err) {
+    next(err);
+  }
+  
+})
+
+router.get("/verify/:verificationToken", async (req, res, next) => {
+  users.verifyEmail(req.params,res);
 });
 
 router.get("/current", authentificate, async (req, res, next) => {
